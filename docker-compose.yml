@@ -1,9 +1,17 @@
 version: "3.9"
 
 services:
+
+  vue-frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"  # Maps localhost:8080 to Nginx inside container
+    restart: unless-stopped
+
   chrono_postgres:
     image: postgres:15
-    
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -14,8 +22,9 @@ services:
       - "${PGPORT}:5432"
 
   chrono_pulse:
-    build: .
-    
+    build:
+      context: ./time_manager_phx
+      dockerfile: Dockerfile
     depends_on:
       - chrono_postgres
     env_file:
