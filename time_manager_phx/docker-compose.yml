@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  chrono_postgres:
+    image: postgres:15
+    
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - time_manager_phx_db_data:/var/lib/postgresql/data
+    ports:
+      - "${PGPORT}:5432"
+
+  chrono_pulse:
+    build: .
+    
+    depends_on:
+      - chrono_postgres
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: "ecto://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${PGHOST}/${POSTGRES_DB}"
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB}
+      PGHOST: ${PGHOST}
+      PGPORT: ${PGPORT}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      MIX_ENV: ${MIX_ENV}
+      PORT: ${PORT}
+    ports:
+      - "${PORT}:${PORT}"
+    command: >
+      sh -c '
+        echo ">>> Waiting for Postgres..." &&
+        until pg_isready -h "${PGHOST}" -p "${PGPORT}" -U "${PGUSER}"; do
+          sleep 1
+        done &&
+        echo ">>> Postgres is ready!" &&
+        ./bin/chrono_pulse eval "ChronoPulse.Release.migrate" &&
+        ./bin/chrono_pulse start
+      '
+
+volumes:
+  time_manager_phx_db_data:
