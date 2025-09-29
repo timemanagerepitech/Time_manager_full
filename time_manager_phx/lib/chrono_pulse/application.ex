@@ -8,24 +8,21 @@ defmodule ChronoPulse.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      # Telemetry supervisor
       ChronoPulseWeb.Telemetry,
+      # Database repo
       ChronoPulse.Repo,
-      {DNSCluster, query: Application.get_env(:chrono_pulse, :dns_cluster_query) || :ignore},
+      # PubSub system
       {Phoenix.PubSub, name: ChronoPulse.PubSub},
-      # Start a worker by calling: ChronoPulse.Worker.start_link(arg)
-      # {ChronoPulse.Worker, arg},
-      # Start to serve requests, typically the last entry
+      # Start to serve requests (must be last)
       ChronoPulseWeb.Endpoint
+      # Add workers here if needed, e.g. {ChronoPulse.Worker, arg}
     ]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: ChronoPulse.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
-  # Tell Phoenix to update the endpoint configuration
-  # whenever the application is updated.
   @impl true
   def config_change(changed, _new, removed) do
     ChronoPulseWeb.Endpoint.config_change(changed, removed)

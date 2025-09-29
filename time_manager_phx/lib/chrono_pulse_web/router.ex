@@ -23,6 +23,8 @@ defmodule ChronoPulseWeb.Router do
     get "/charts/user/:user_id/hours", ChartsController, :user_hours
     get "/charts/user/:user_id/sessions", ChartsController, :user_sessions
     get "/charts/user/:user_id/breaks", ChartsController, :user_breaks
+
+    post "/chat", ChatController, :create
   end
 
   # Enable Swoosh mailbox preview in development

@@ -7,6 +7,7 @@ config :chrono_pulse, ChronoPulse.Repo,
   hostname: System.get_env("PGHOST") || "localhost",
   port: String.to_integer(System.get_env("PGPORT") || "5432"),
   database: System.get_env("PGDATABASE") || "chrono_pulse_dev",
+  o
   pool_size: 10,
   stacktrace: true,
   show_sensitive_data_on_connection_error: true
