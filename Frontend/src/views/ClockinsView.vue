@@ -36,6 +36,9 @@
 
     <div class="card">
       <h2>Working time by day</h2>
+      <div class="row" style="margin-bottom:.5rem">
+        <label>Filter date: <input type="date" v-model="chartsDate" @change="loadCharts" /></label>
+      </div>
       <p v-if="chartsLoading">Loading charts…</p>
       <div v-else>
         <div v-if="hoursRows.length === 0" class="hint">No working time yet.</div>
@@ -119,6 +122,7 @@ const loading = ref(false)
 const error = ref('')
 const creating = ref(false)
 const currentUserId = ref('')
+const chartsDate = ref('')
 const chartsLoading = ref(false)
 const hoursRows = ref([])
 const breaks = ref([])
@@ -193,11 +197,11 @@ const loadCharts = async () => {
   if (!currentUserId.value) { hoursRows.value = []; breaks.value = []; return }
   chartsLoading.value = true
   try {
-    const hoursRes = await chartsApi.hoursByUser(currentUserId.value)
+    const hoursRes = await chartsApi.hoursByUser(currentUserId.value, chartsDate.value ? { date: chartsDate.value } : undefined)
     const hoursData = Array.isArray(hoursRes?.data) ? hoursRes.data : []
     hoursRows.value = hoursData
 
-    const breaksRes = await chartsApi.breaksByUser(currentUserId.value)
+    const breaksRes = await chartsApi.breaksByUser(currentUserId.value, chartsDate.value ? { date: chartsDate.value } : undefined)
     breaks.value = Array.isArray(breaksRes?.data) ? breaksRes.data : []
 
     const sessRes = await chartsApi.sessionsByUser(currentUserId.value)
@@ -263,6 +267,12 @@ onMounted(() => {
     const u = JSON.parse(localStorage.getItem('currentUser') || 'null')
     if (u?.id) currentUserId.value = String(u.id)
   } catch {}
+  // default charts date to today (YYYY-MM-DD)
+  const today = new Date()
+  const yyyy = today.getFullYear()
+  const mm = String(today.getMonth() + 1).padStart(2, '0')
+  const dd = String(today.getDate()).padStart(2, '0')
+  chartsDate.value = `${yyyy}-${mm}-${dd}`
   load()
   loadCharts()
 })

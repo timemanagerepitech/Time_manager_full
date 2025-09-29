@@ -108,6 +108,28 @@ alias ChronoPulse.TimeTracking.Clock
     Repo.all(from c in Clock, where: c.user_id == ^user_id, order_by: [desc: c.time])
   end
 
+  @doc """
+  Same as listing clocks but limited to a specific date and ordered ascending by time.
+  Useful for computing breaks between OUT/IN pairs within the day.
+  """
+  def list_clocks_for_user_on_date_asc(user_id, %Date{} = date) do
+    {:ok, start_dt} = DateTime.new(date, ~T[00:00:00], "Etc/UTC")
+    {:ok, end_dt} = DateTime.new(date, ~T[23:59:59], "Etc/UTC")
+
+    Repo.all(
+      from c in Clock,
+        where: c.user_id == ^user_id and c.time >= ^start_dt and c.time <= ^end_dt,
+        order_by: [asc: c.time]
+    )
+  end
+
+  def list_clocks_for_user_on_date_asc(user_id, date_string) when is_binary(date_string) do
+    case Date.from_iso8601(date_string) do
+      {:ok, date} -> list_clocks_for_user_on_date_asc(user_id, date)
+      _ -> []
+    end
+  end
+
   def create_clock(attrs) do
     %Clock{}
     |> Clock.changeset(attrs)
