@@ -1,0 +1,14 @@
+# Node / Frontend
+node_modules
+dist
+
+# Phoenix / Backend
+_build
+deps
+*.log
+
+# Git
+.git
+
+# Env
+.env

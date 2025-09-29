@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: tm_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: time_manager_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ./time_manager_phx
+    container_name: tm_backend
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: time_manager_db
+      DB_HOST: db
+      DATABASE_URL: ecto://postgres:postgres@db:5432/time_manager_db
+      SECRET_KEY_BASE: "u9RtENtCh5yBFO586aGwA+uh+2g3+a7CXjJD5tQz7Q+nTKAgnaqpTwUXKqpOS1CD"
+      PORT: 4000
+    depends_on:
+      - db
+    ports:
+      - "4000:4000"
+
+  frontend:
+    build:
+      context: ./Frontend
+    container_name: tm_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"   # host:container (nginx serves on 80)
+    # no environment required for static build
+
+volumes:
+  postgres_data:
