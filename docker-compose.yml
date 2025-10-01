@@ -7,7 +7,7 @@ services:
       context: ./Frontend
       dockerfile: Dockerfile
     ports:
-      - "8080:80"  # Maps localhost:8080 to Nginx inside container
+      - "${FRONTEND_PORT}:80"  # Maps host FRONTEND_PORT to container Nginx
     restart: unless-stopped
 
   chrono_postgres:
@@ -54,3 +54,4 @@ services:
 
 volumes:
   time_manager_phx_db_data:
+
