@@ -12,12 +12,13 @@
     <main class="content">
       <RouterView />
     </main>
+    <ChatBot />
   </div>
-  
 </template>
 
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
+import { RouterLink, RouterView } from 'vue-router';
+import ChatBot from '@/components/ChatBot.vue';
 </script>
 
 <style>

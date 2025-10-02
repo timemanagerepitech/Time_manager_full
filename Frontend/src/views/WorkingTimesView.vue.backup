@@ -2,37 +2,54 @@
   <section>
     <h1>Daily Schedule</h1>
     <div class="card">
-      <h2>Set Your Weekly Schedule</h2>
-      <p class="hint">Define your regular working hours for each day of the week.</p>
+      <h2>Set Your Daily Schedule</h2>
+      <p class="hint">Set your working hours for specific dates.</p>
       
-      <form class="schedule-form" @submit.prevent="saveSchedule">
-        <div v-for="day in daysOfWeek" :key="day" class="day-schedule">
-          <label class="day-label">
-            <input type="checkbox" v-model="schedule[day].enabled" />
-            {{ day }}
-          </label>
-          <div class="time-inputs" v-if="schedule[day].enabled">
-            <input 
-              type="time" 
-              v-model="schedule[day].startTime" 
-              :disabled="!schedule[day].enabled"
-              required
-            />
-            <span>to</span>
-            <input 
-              type="time" 
-              v-model="schedule[day].endTime" 
-              :disabled="!schedule[day].enabled"
-              required
-            />
-          </div>
+      <form class="schedule-form" @submit.prevent="addSchedule">
+        <div class="date-schedule-input">
+          <label class="date-label">Select Date:</label>
+          <input 
+            type="date" 
+            v-model="selectedDate" 
+            :min="getMinDate()"
+            required
+          />
         </div>
-        <div class="form-actions">
+        <div class="time-inputs" v-if="selectedDate">
+          <input 
+            type="time" 
+            v-model="newSchedule.startTime" 
+            required
+          />
+          <span>to</span>
+          <input 
+            type="time" 
+            v-model="newSchedule.endTime" 
+            required
+          />
+        </div>
+        <div class="form-actions" v-if="selectedDate">
           <button type="submit" :disabled="saving">
-            {{ saving ? 'Saving...' : 'Save Schedule' }}
+            {{ saving ? 'Adding...' : 'Add Schedule' }}
           </button>
         </div>
       </form>
+
+      <h2>Your Schedules</h2>
+      <p v-if="Object.keys(schedules).length === 0" class="no-data">
+        No schedules set. Add your first schedule above.
+      </p>
+      <div v-else class="schedule-list">
+        <div v-for="(scheduleItem, date) in sortedSchedules" :key="date" class="schedule-item-card">
+          <div class="schedule-header">
+            <div class="schedule-date">{{ formatDisplayDate(date) }}</div>
+            <button @click="removeSchedule(date)" class="btn-remove" title="Remove schedule">×</button>
+          </div>
+          <div class="schedule-time">
+            {{ scheduleItem.startTime }} - {{ scheduleItem.endTime }}
+          </div>
+        </div>
+      </div>
 
       <h2>Upcoming Schedule</h2>
       <p v-if="loading">Loading schedule...</p>
@@ -240,7 +257,12 @@ const defaultSchedule = daysOfWeek.reduce((acc, day) => {
   return acc
 }, {})
 
-const schedule = reactive(JSON.parse(JSON.stringify(defaultSchedule)))
+const schedules = reactive({}) // Date-based schedules: { '2024-01-01': { startTime: '09:00', endTime: '17:00' } }
+const selectedDate = ref('')
+const newSchedule = reactive({
+  startTime: '',
+  endTime: ''
+})
 
 // Generate upcoming schedule for the next 7 days with working hours info
 const upcomingSchedule = computed(() => {
@@ -270,6 +292,32 @@ const upcomingSchedule = computed(() => {
   
   return result
 })
+
+// Sort schedules by date
+const sortedSchedules = computed(() => {
+  return Object.keys(schedules)
+    .sort((a, b) => new Date(a) - new Date(b))
+    .reduce((acc, date) => {
+      acc[date] = schedules[date]
+      return acc
+    }, {})
+})
+
+// Helper functions for date handling
+const getMinDate = () => {
+  const today = new Date()
+  return today.toISOString().split('T')[0]
+}
+
+const formatDisplayDate = (dateString) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  })
+}
 
 const formatDate = (date) => {
   if (!date) return '--'

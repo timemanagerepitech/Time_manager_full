@@ -213,39 +213,123 @@ const loadCharts = async () => {
 }
 
 const updateCharts = () => {
-  // Hours by day (minutes)
+  // Hours by day (mm:ss)
   const labels = hoursRows.value.map(r => r.date)
-  const minutes = hoursRows.value.map(r => r.minutes)
+  const seconds = hoursRows.value.map(r => r.seconds || (r.minutes * 60))
   if (hoursChart) hoursChart.destroy()
   if (hoursCanvas.value) {
     hoursChart = new Chart(hoursCanvas.value.getContext('2d'), {
       type: 'line',
-      data: { labels, datasets: [{ label: 'Minutes Worked', data: minutes, borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,0.2)', tension: 0.3 }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { tooltip: { callbacks: { label: (ctx) => ` ${ctx.parsed.y}m (${fmtMMSS(ctx.parsed.y * 60)})` } } } }
+      data: { 
+        labels, 
+        datasets: [{ 
+          label: 'Working Time', 
+          data: seconds, 
+          borderColor: '#60a5fa', 
+          backgroundColor: 'rgba(96,165,250,0.2)', 
+          tension: 0.3 
+        }] 
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            ticks: {
+              callback: function(value) {
+                return fmtMMSS(value);
+              }
+            }
+          }
+        },
+        plugins: { 
+          tooltip: { 
+            callbacks: { 
+              label: (ctx) => ` ${fmtMMSS(ctx.parsed.y)}`
+            } 
+          } 
+        } 
+      }
     })
   }
 
-  // Breaks durations over time (minutes) using start time label
+  // Breaks durations over time (mm:ss) using start time label
   const bLabels = breaks.value.map(b => new Date(b.start).toLocaleTimeString())
-  const bMinutes = breaks.value.map(b => b.minutes)
+  const bSeconds = breaks.value.map(b => b.seconds || (b.minutes * 60))
   if (breaksChart) breaksChart.destroy()
   if (breaksCanvas.value) {
     breaksChart = new Chart(breaksCanvas.value.getContext('2d'), {
       type: 'line',
-      data: { labels: bLabels, datasets: [{ label: 'Break Minutes', data: bMinutes, borderColor: '#f87171', backgroundColor: 'rgba(248,113,113,0.2)', tension: 0.3 }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { tooltip: { callbacks: { label: (ctx) => ` ${ctx.parsed.y}m (${fmtMMSS(ctx.parsed.y * 60)})` } } } }
+      data: { 
+        labels: bLabels, 
+        datasets: [{ 
+          label: 'Break Duration', 
+          data: bSeconds, 
+          borderColor: '#f87171', 
+          backgroundColor: 'rgba(248,113,113,0.2)', 
+          tension: 0.3 
+        }] 
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            ticks: {
+              callback: function(value) {
+                return fmtMMSS(value);
+              }
+            }
+          }
+        },
+        plugins: { 
+          tooltip: { 
+            callbacks: { 
+              label: (ctx) => ` ${fmtMMSS(ctx.parsed.y)}`
+            } 
+          } 
+        } 
+      }
     })
   }
 
-  // Working sessions durations over time (minutes) using start time label
+  // Working sessions durations over time (mm:ss) using start time label
   const sLabels = sessions.value.map(s => new Date(s.start).toLocaleTimeString())
-  const sMinutes = sessions.value.map(s => s.minutes)
+  const sSeconds = sessions.value.map(s => s.seconds || (s.minutes * 60))
   if (sessionsChart) sessionsChart.destroy()
   if (sessionsCanvas.value) {
     sessionsChart = new Chart(sessionsCanvas.value.getContext('2d'), {
       type: 'line',
-      data: { labels: sLabels, datasets: [{ label: 'Session Minutes', data: sMinutes, borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,0.2)', tension: 0.3 }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { tooltip: { callbacks: { label: (ctx) => ` ${ctx.parsed.y}m (${fmtMMSS(ctx.parsed.y * 60)})` } } } }
+      data: { 
+        labels: sLabels, 
+        datasets: [{ 
+          label: 'Session Duration', 
+          data: sSeconds, 
+          borderColor: '#34d399', 
+          backgroundColor: 'rgba(52,211,153,0.2)', 
+          tension: 0.3 
+        }] 
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            ticks: {
+              callback: function(value) {
+                return fmtMMSS(value);
+              }
+            }
+          }
+        },
+        plugins: { 
+          tooltip: { 
+            callbacks: { 
+              label: (ctx) => ` ${fmtMMSS(ctx.parsed.y)}`
+            } 
+          } 
+        } 
+      }
     })
   }
 }
