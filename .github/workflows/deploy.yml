@@ -1,0 +1,27 @@
+name: Deploy to EC2 with Docker
+
+on:
+  push:
+    branches: ["main"]   # change to "master" if your repo uses master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_KEY }}
+
+      - name: Deploy via SSH
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          cd Time_manager_full
+          git pull origin main
+          docker-compose down
+          docker-compose up -d --build
+          EOF
