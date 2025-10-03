@@ -20,8 +20,19 @@ jobs:
       - name: Deploy via SSH
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          # Navigate to project folder; clone if it doesn't exist
+          if [ ! -d "Time_manager_full" ]; then
+            git clone https://github.com/timemanagerepitech/Time_manager_full.git
+          fi
           cd Time_manager_full
+          
+          # Pull latest changes
           git pull origin main
+          
+          # Stop and rebuild Docker containers
           docker-compose down
           docker-compose up -d --build
+          
+          # Optional: Clean up old Docker images to save space
+          docker image prune -af
           EOF
